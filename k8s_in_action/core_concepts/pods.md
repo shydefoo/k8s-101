@@ -107,6 +107,7 @@ this is done using labels as well (**nodeSelector** and node labels)
     - `-l label_name=some_name,label_name_2!=some_name_2` get resources with label_name=some_name and label_name_2!=some_name_2
     - `-n <namespace>` list pods in specified namespace
 - `kubectl logs <pod-name> [-c container_name]` Get logs of container, -c optional if multiple containers 
+    - `--previous` see logs of previous container (in case of restart)
 - `kubectl portforward <pod-name> machine-local-port:pod-port` FOR DEBUGGING ONLY. Talk to specific pod without going through service
 - `alias kcd='kubectl config set-context $(kubectl config current-context) -- namespace'` , then use `kcd some-namespace`
 - `kubectl delete pod <pod-name1> <pod-name2>` delete pod
