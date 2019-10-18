@@ -79,3 +79,58 @@
 - Kubelet of the node hosting the pod ensures that containers are kept running. But if the node itself crashes, its the Control Plane that must create replacements for all the pods that went down with the node
     - Kubelet can't do anything if the node fails
 - To ensure that the app is restarted on another node, the pod needs to be managed by another resource..eg. **Replication Resource**
+
+#### Replication Controllers
+- Resource that constantly monitors the list of running pods and makes sure the actual number of pods that match a certain label selector always matches the desired number
+- Components:
+    - label selector: determines what pods are in the ReplicationController's scope
+    - replica count: specifies desired number of pods that should be running
+    - pod template: used when creating new pod replicas
+- Can be modified at any time
+- Enables horizontal scaling, both manual and automatic
+- Take note: a pod instance is never relocated to another node, a completely new pod is created to replace another instance
+- Since RCs manage pods that match its label selector, a pod can be removed from or added to the scope of a RC by changing it's labels
+    - useful when performing actions on a specific pod
+#### Definition
+- ```yaml
+    apiVersion: v1
+    kind: ReplicationController
+    metadata:
+      name: kubia                   # name of RC
+    spec:
+      replicas: 3                   # desired number of pod instances
+      selector:
+        app: kubia                  # pod selector determining what pods RC is operating on
+      template:                     # pod template for creating new pods
+        metadata:                   
+          labels:
+            app: kubia              # pod label here must match label selector of RC
+        spec:
+          containers:
+          - name: kubia
+            image: some-image/kubia
+            ports:
+            - containerPort: 8080
+  ```
+- Example description of RC
+    - ```yaml
+        Name:           kubia
+        Namespace:      default
+        Selector:       app=kubia
+        Labels:         app=kubia
+        Annotations:    <none>
+        Replicas:       3 current / 3 desired                                    1
+        Pods Status:    4 Running / 0 Waiting / 0 Succeeded / 0 Failed           2
+        Pod Template:
+          Labels:       app=kubia
+          Containers:   ...
+          Volumes:      <none>
+        Events:                                                                  3
+        From                    Type      Reason           Message
+        ----                    -------  ------            -------
+        replication-controller  Normal   SuccessfulCreate  Created pod: kubia-53thy
+        replication-controller  Normal   SuccessfulCreate  Created pod: kubia-k0xz6
+        replication-controller  Normal   SuccessfulCreate  Created pod: kubia-q3vkg
+        replication-controller  Normal   SuccessfulCreate  Created pod: kubia-oini2
+      ```
+    - `Pod Status: 4 Running` even though `Replicas: 3 current / 3 desires` because a pod that's terminating is still considered running, but not counted in the replica count
