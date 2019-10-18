@@ -134,3 +134,115 @@
         replication-controller  Normal   SuccessfulCreate  Created pod: kubia-oini2
       ```
     - `Pod Status: 4 Running` even though `Replicas: 3 current / 3 desires` because a pod that's terminating is still considered running, but not counted in the replica count
+
+
+### ReplicaSets
+
+- ReplicatSet behaves exactly like a ReplicationController, but with more expressive pod selectors
+- ReplicationController's label selector only allows matching pods that include a certain label
+
+#### Defining ReplicaSet
+
+
+### DaemonSets
+- Like ReplicaSet, but runs 1 single pod replica each node (or subset of nodes specified in nodeSelector)
+- Usually used to run infra-related pods that perform system-level operations (eg. log collector, resource monitor)
+  - K8s own kube-proxy process is needed to run on all nodes to make services work
+- Example DaemonSet manifeest:
+- ```yaml
+  apiVersion: apps/v1beta2           # DaemonSets are inthe apps API group, version v1beta2
+  kind: DaemonSet                    
+  metadata:
+    name: ssd-monitor
+  spec:
+    selector:
+      matchLabels:
+        app: ssd-monitor
+    template:
+      metadata:
+        labels:
+          app: ssd-monitor
+      spec:
+        nodeSelector:                # pod template includes a node selector, which 
+          disk: ssd                  # selects nodes with the disk=ssd label
+        containers:
+        - name: main
+          image: luksa/ssd-monitor
+  ```
+- ![DaemonSets run only a single pod replica on each node, ReplicaSets scatter tham around the whole cluster randomly][fig_4_8]
+
+### Job Resource
+- Creates pods that perform a single completable task
+- ReplicationControllers, ReplicaSets, DaemonSets run continuous tasks that are never considered completed (Processes in such pods are restarted when they exit by the kubelet)
+- In a completable task, after its process terminates, it should not be restarted again
+- Node failure: pods on that node that are managed by a Job will be reschedule to other nodes
+- Process failure: Job can be configured to restart the container or not
+- Can be configured to:
+  - run more than 1 pod instance `spec.completions`
+  - run them in parrallel/sequentially `spec.parallelism`
+  - limit a pod's time (if the pod runs longer than set time, system will try to terminate it, mark job as failed) `activeDeadlineSeconds` property in **pod spec**
+  - retry x times before it is marked as failed by specifying `spec.backoffLimit` (default 6)
+- ![Pods managed by Jobs are rescheduled until they finish successfully][fig_4_10]
+
+#### Job resource definition
+- ```yaml
+  apiVersion: batch/v1            # Jobs are in the batch API group, version v1
+  kind: Job
+  metadata:
+    name: batch-job
+  spec:                           # No pod selector here, pods will be created based on labels in pod template
+    completions: 5                # Ensure 5 pods completed successfully
+    parallelism: 2                # Up to 2 pods can run in parallel
+    backOffLimit: 5
+    template:
+      metadata:
+        labels:
+          app: batch-job
+      spec:
+        restartPolicy: OnFailure  # Jobs can't use the default restart policy (Always), need to state explicity
+        containers:
+        - name: main
+          image: registry/image
+
+  ```
+
+### CronJob Resource
+- like a cron job in unix, create a **Job** resource according to the Job template which creates and starts pod replicas according to the Job's pod template
+- Job resources will be created from the CronJob resource at approx the scheduled time
+- Job then creates pods
+- Ideally, CronJob creates only a single Job for each execution...but sometimes:
+  - 2 Job are created at the same time..so
+    - Ensure jobs are **idempontent**
+  - No Job created at all..so
+    - Ensure next job run performs any work that should have been done by previous (missed) run
+
+#### CronJob definition
+- ```yaml
+  apiVersion: batch/v1beta1
+  Kind: CronJob
+  metadata:
+    name: batch-cron-job
+  spec:
+    schedule: "0,15,30,45, * * * *"   # job runs at 0, 15, 30, 45 min of every hour everyday
+    jobTemplate:
+      spec:
+        template:
+          metadata:
+            labels:
+              app: periodic-batch-job
+          spec:
+            metadata:
+              labels:
+                app: periodic-batch-job
+            spec:
+              restartPolicy: OnFailure
+              containers:
+              - name: main
+                image: registry/image
+  ```
+
+
+
+
+[fig_4_8]: ./images/04fig08_alt.jpg
+[fig_4_10]: ./images/04fig10_alt.jpg

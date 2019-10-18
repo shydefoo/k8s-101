@@ -25,11 +25,12 @@
 ***
 - All containers in the same pod have the same loopback network interface; __they can communicate with each other through localhost__
 - Take care not to bind containers in same pod to the same *port numbers*
+- ![Each pod gets a routable IP address, all other pods see the pod under that ip address][fig_3_2]
 - all pods in a k8s cluster reside in a single flat, shared, network-address space: **Every pod can access every other pod *at the other pod's IP address*** (without any NAT gateway, doesn't matter if pods are scheduled on different nodes)
 - regardless of actual inter-node network topo, an additional software-defined network layered on top of the actual network enables each pod to get its own IP address and be accessible from all other pods through this additional network
 ***
 - When organising containers into pods, if you need to scale a container individually -> That container should be deployed in a **separate** pod
-
+- ![a pod shouldn't contain multiple containers if they don't need to run on the same machine][fig_3_4]
 #### Pod yaml definition
 - Simple pod definition in yaml
 ```yaml
@@ -114,3 +115,6 @@ this is done using labels as well (**nodeSelector** and node labels)
     - `--all` deletes all pods in current namespace, keeping current ns
     - deleting namespace removes all pods in namespace
 - `kubectl delete all --all` deletes all(almost) resources in current namespace
+
+[fig_3_2]: ./images/03fig02_alt.jpg
+[fig_3_4]: ./images/03fig04_alt.jpg
