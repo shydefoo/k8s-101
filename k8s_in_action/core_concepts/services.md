@@ -1,5 +1,15 @@
 ### Services: Enabling Clients to Discover and talk to pods
 
+- [Intro](#introduction)
+- [Service Definition](#service-definition)
+- [Discovering Services](#discovering-services)
+- Service Types:
+  - [ClusterIP (default)](#service-definition)
+  - [ExternalName](#connecting-to-services-living-outside-cluster)
+  - [NodePort](#nodeport)
+  - [LoadBalancer](#load-balancer)
+
+#### Introduction
 - K8s Service is a resource to create a single, constant point of entry to a group of pods providing the same service
 - Each service has an IP address and port that **never changes** while the service exists
   - Pods are ephemeral
@@ -8,11 +18,6 @@
   - With the service, all those pods are accessible through a single IP address
   - Eg: ![Frontend/Backend Service][fig_5_1]
 
-- Service Types:
-  - ClusterIP (default)
-  - ExternalName
-  - NodePort
-  - LoadBalancer
 
 #### Service Definition
 ```yaml
