@@ -8,6 +8,8 @@
   - [ExternalName](#connecting-to-services-living-outside-cluster)
   - [NodePort](#nodeport)
   - [LoadBalancer](#load-balancer)
+- [Endpoint Definition](#endpoint-definition)
+- [Ingress Definition](#ingress-definition)
 
 #### Introduction
 - K8s Service is a resource to create a single, constant point of entry to a group of pods providing the same service
@@ -153,6 +155,7 @@
   - hides actual service name and its location from pods consuming service, which allows modification of the service FQDN by changing `spec.externalName`
   - `ExternalName` services are implemented solely at the DNS level - a simple CNAME DNS record is created for the service, so these type of services don't get a cluster ip
       - CNAME record points to a FQDN instead of a numberic IP address
+  - By default external endpoints eg `www.google.com` are reachable from within the cluster, the `external-service` Service just enables decoupling
 
 #### Exposing Services to External clients
 - Expose certain services, such as a frontend webservers to the outside
@@ -195,7 +198,7 @@
       sent to that single pod (Users will always hit the same pod until the connection is closed)
 ![load_balancer type service][fig_5_7]
 
-##### Things to Note for NodePort and LoadBalancers
+##### Things to note for NodePort and LoadBalancers
 - when external client connects to a service through a node port, the randomly 
   chosen pod may / may not be running on the same node that received the connection
 - additional network hop required to reach pod may not always be desirable
@@ -210,8 +213,78 @@
   - Does not perform SNAT, so actual client's IP is preserved, backing pod can see 
     client's IP address (because there is no additional hop)
 
+##### Exposing services externally through Ingress
+![exposing multiple services through single ingress][fig_5_9]
+![Accessing pods through an Ingress][fig_5_10]
+- Each `LoadBalancer` service requires its own load balancer with its own public IP address,
+  an Ingress only requires **one** but can support many services
+- Ingress examines host and path in HTTP request to determine which service request should be forwarded to
+- Ingersses operate at the application layer of the network stack, can provide features such as cookie-based session affinity (which services can't)
+- requires an `Ingress Controller` running in the cluster for Ingress resources to work (differs among various K8s environments)
+- Important to ensure domain name resolves to IP of the **Ingress Controller**
+  - configure DNS servers to resorve *domain name* to Ingress Controller IP
+
+###### Ingress Definition
+```yaml
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: kubia-ingress
+spec:
+  rules:
+  - host: kubia.example.com     # Ingress maps kubia.example.com domain name to your service
+    http:
+      path:
+      - paths: /                # all incoming HTTP requests for host kubia.example.com will be sent to
+        backend:                # kubia-nodeport service at port 80
+          serviceName: kubia-nodeport
+          servicePort: 80
+      - path: /admin
+        backend:
+          serviceName: kubia-admin
+          sevicePort: 80
+  - host: bar.example.com       # map to service via host
+    http:
+      paths: 
+        - path: /
+          backend:
+            serviceName: bar
+            servicePort: 80
+```
+
+###### Configuring Ingress to handle TLS Traffic
+- By attaching a certificate and private key to the Ingress (Enables Ingress Controller to take care of everything related to TLS)
+    - Cert and Private Key need to be stored in a `Secret` resource
+        ```
+        $ openssl genrsa -out tls.key 2048
+        $ openssl req -new -x509 -key tls.key -out tls.cert -days 360 -subj
+         /CN=kubia.example.com
+        $ kubectl create secret tls tls-secret --cert=tls.cert --key=tls.key
+        secret "tls-secret" created
+        ```
+    - Sign cert through `CertificateSigningRequest` resource (signer component must be running in a cluster)
+- Add a `spec.tls` component into Ingress Manifest
+```yaml
+  tls:              # whole tls configuration under tls
+  - hosts:                
+    - kubia.example.com
+    secretName: tls-secret
+  rules:
+    ....
+```
 
 
+#### Readiness Probes
+- Readiness Probe give time for a pod to do its initializing procedure, before being added into the `Endpoints` object to serve incoming requests
+- Likewise for Pods that fail readiness probe:
+![Pod that fails readiness probe][fig_5_11]
+
+
+#### Headless Service
+- Used to connect to ALL pods behind a service instead of just 1
+- setting `clusterIP` field in a service spec to `None` makes the service headless
+- K8s won't assign the service a cluster IP
+- Enables discovery of pod IPs through DNS 
 
 
 [fig_5_1]: ./images/05fig01_alt.jpg
@@ -221,3 +294,6 @@
 [fig_5_6]: ./images/05fig06_alt.jpg "Figure 5.6, an external client connecting to a NodePort service either through Node 1 or 2"
 [fig_5_7]: ./images/05fig07_alt.jpg "Figure 5.7. An external client connecting to a LoadBalancer Service"
 [fig_5_8]: ./images/05fig08_alt.jpg "Service using Local external traffic policy may lead to uneven load distribution across pods"
+[fig_5_9]: ./images/5fig09_alt.jpg "Figure 5.9 Multiple services can be exposed through a single ingress"
+[fig_5_10]: ./images/05fig10_alt.jpg "Figure 5.10 Accessing pods through an Ingress"
+[fig_5_11]: ./images/05fig11_alt.jpg "Figure 5.11 Pod whose readiness probe fails is removed as an endpoint of a service"
