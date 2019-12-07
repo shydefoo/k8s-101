@@ -136,3 +136,22 @@ mrk   Restart Count:  0
 
 #### Configmaps
 - see [configmaps](./lab/configmap) and [configmap-pod.yml](./lab/configmap/configmap-pod.yml)
+
+#### Downward API vs Env vars
+- downward API: used to pass k8s specific data from pod to container
+  - expose information of a pod to its downward container
+  - eg. labels, annotations can be mounted into a container via `volumes.downwardAPI` and the usual `spec.containers[].volumeMounts`
+  - see [dapi-volume.yml](./lab/dapi-volume.yml)
+  <details>  
+    <summary> fieldRef gets mounted at `mountPath/path`</summary>    
+
+    ```bash
+      ➜ k exec -it dapi-volume /bin/bash
+      root@dapi-volume:/# cd /etc/podinfo
+      root@dapi-volume:/etc/podinfo# ls
+      annotations  labels
+      root@dapi-volume:/etc/podinfo# cat annotations
+      build="two"
+      builder="john-doe"
+    ```
+  </details>  
