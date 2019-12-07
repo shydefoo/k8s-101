@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-test-pod
+spec:
+  containers:
+    - name: test-container
+      image: nginx
+      env:
+        - name: SPECIAL_LEVEL_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: special-config  # name of configMap resource
+              key: special.how      # key in configMap resource to set env var's value to
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: env-config  # reference multiple configMap resources
+              key: log_level
+      envFrom:
+        - configMapRef:
+            name: env-from-config # mounts key as env variable and value as env variable value...?
+      volumeMounts:
+        - name: config-volume
+          mountPath: /etc/config
+  volumes:
+    - name: config-volume
+      configMap:          # when mounted as volume, key is filename, value is file content
+        name: config-volume
+    

@@ -50,8 +50,9 @@ or...use client library
 - Provides scope for names...names need to be unique only inside a namespace
 - Don't use namespaces for versioning..use labels
 
-### Volumes & Secrets
+### Secrets
 - Create `secret` resource (from file / base64 string), mount secret as volume
+#### From base64 string
 - See [secrets.yml](./lab/secrets.yml) & [secrets-pod.yml](./lab/secrets-pod.yml)
 - ```bash
     k8s-101/k8s_on_the_cloud on  master [?] at ☸️  gke_parabolic-craft-216311_us-central1-a_my-first-clust
@@ -74,3 +75,63 @@ or...use client library
     ➜
   ```
 
+#### From file
+- `kubectl create secret generic sensitive --from-file=./username.txt --from-file=./password.txt`
+- see [secrets-pod-file.yml](./lab/secrets-pod-file.yml)
+```bash
+➜ k get secrets
+NAME                  TYPE                                  DATA   AGE
+default-token-79dd7   kubernetes.io/service-account-token   3      96m
+sensitive             Opaque                                2      6s
+test-secret           Opaque                                2      21m
+
+➜ k describe secrets sensitive
+Name:         sensitive
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+
+Type:  Opaque
+
+Data
+====
+password.txt:  14 bytes
+username.txt:  14 bytes
+```
+<details>
+<summary>Environment variables referenced by secretKeyRef are hidden in kubectl describe</summary>
+```
+➜ k describe pod secret-test-pod-file
+Name:               secret-test-pod-file
+Namespace:          default
+Priority:           0
+PriorityClassName:  <none>
+Node:               gke-my-first-cluster-default-pool-1fe788fb-g00n/10.128.0.2
+Start Time:         Sat, 07 Dec 2019 17:26:16 +0800
+Labels:             <none>
+Annotations:        kubernetes.io/limit-ranger: LimitRanger plugin set: cpu request for container test
+-container
+Status:             Running
+IP:                 10.40.0.13
+Containers:
+  test-container:
+    Container ID:   docker://591830164a760102fec811114665f259a79c46d95242f3b52c1dbd9164a011d5
+    Image:          nginx
+    Image ID:       docker-pullable://nginx@sha256:189cce606b29fb2a33ebc2fcecfa8e33b0b99740da4737133cd
+bcee92f3aba0a
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Sat, 07 Dec 2019 17:26:18 +0800
+    Ready:          True
+mrk   Restart Count:  0
+    Requests:
+      cpu:  100m
+    Environment:
+      SECRET_USERNAME:  <set to the key 'username.txt' in secret 'sensitive'>  Optional: false
+      SECRET_PASSWORD:  <set to the key 'password.txt' in secret 'sensitive'>  Optional: false
+```
+  </details>
+
+#### Configmaps
+- see [configmaps](./lab/configmap) and [configmap-pod.yml](./lab/configmap/configmap-pod.yml)

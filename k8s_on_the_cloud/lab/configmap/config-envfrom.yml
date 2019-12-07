@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: env-from-config
+data:
+  ENV_FROM_CONFIG_VALUE: "1"
+
