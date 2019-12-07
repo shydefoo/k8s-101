@@ -53,7 +53,7 @@ or...use client library
 ### Secrets
 - Create `secret` resource (from file / base64 string), mount secret as volume
 #### From base64 string
-- See [secrets.yml](./lab/secrets.yml) & [secrets-pod.yml](./lab/secrets-pod.yml)
+- See [secrets.yml](./lab/secrets/secrets.yml) & [secrets-pod.yml](./lab/secrets/secrets-pod.yml)
 - ```bash
     k8s-101/k8s_on_the_cloud on  master [?] at ☸️  gke_parabolic-craft-216311_us-central1-a_my-first-clust
     er
@@ -77,7 +77,7 @@ or...use client library
 
 #### From file
 - `kubectl create secret generic sensitive --from-file=./username.txt --from-file=./password.txt`
-- see [secrets-pod-file.yml](./lab/secrets-pod-file.yml)
+- see [secrets-pod-file.yml](./lab/secrets/secrets-pod-file.yml)
 ```bash
 ➜ k get secrets
 NAME                  TYPE                                  DATA   AGE
