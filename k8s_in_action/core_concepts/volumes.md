@@ -11,12 +11,60 @@
 - `hostPath`: Used for mounting directories from worker node's filesystem into pod (more relevant for DaemonSets)
 - `gitRepo`: Volume initialized by checking out contents of a Git repository
 - `nfs`: NFS share mounted into the pod
+- `configMap`, `secret`, `downwardAPI`: special types of volumes used to expose K8s resources / cluster info to the pod
 - `gcePersistentDisk, awsElasticBlockStore, azureDisk`: for mounting cloud provider-specific storage
 - `persistentVolumeClaim`: a method to use pre/ dynamically provisioned persistent storage
 
-#### So..
-- Best way to attach persistant storage to a pod is to only create the PersistantVolumeClaim and the pod
-- EVERYTHING else is taken care of by the *dynamic PersistantVolume provisioner
+#### Basic Structure
+- `spec.containers[].`
+```yaml
+  volumeMounts:
+    - name: html
+      mountPath: /path/dir
+```
+- `spec.`
+```yaml
+
+  volumes:
+    - name: html # specify vol name
+      <type_of_vol>: ...
+```
+
+#### PersistentVolumeClaim with dynamic provisioning
+- Best way to attach persistant storage to a pod is to only create the `PersistentVolumeClaim` as a `spec.volumes` and **mount** volume in `spec.containers[].volumeMounts`
+- PersistentVolumeClaim
+  ```yaml
+  apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: my-persistent-vol-claim
+  spec:
+    resources:
+      requests:
+        storage: 1Gi
+    accessModes:
+      - ReadWriteOnce
+  ```
+- Use PersistentVolumeClaim in Pod (cluster will dynamically provision PersistentVolume and underlying storage)
+    ```yaml
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: mongodb
+    spec:
+      containers:
+        - name: mongo
+          image: mongodb
+          volumeMounts:
+            - name: mongodb-vol
+              mountPath: /data/db
+      volumes:
+        - name: mongodb-vol
+          persistentVolumeClaim:
+            claimName: my-persistent-vol-claim
+    
+    ```
+- EVERYTHING else is taken care of by the *dynamic PersistantVolume provisioner  
 ![Complete picture of dynamic provisioning][fig_6_10]
 
 

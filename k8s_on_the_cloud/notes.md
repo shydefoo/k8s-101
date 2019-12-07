@@ -1,14 +1,11 @@
 #### Commands
 
 - create deployment  
-`k run first-deployment --image=nginx` (imperative command, creates deployment)
-
-`k exec -it <pod-name> /bin/bash`
-
+- `k run first-deployment --image=nginx` (imperative command, creates deployment)
+-`k exec -it <pod-name> /bin/bash`
 - `k get pods <pod_name>`:
   - ready 1/2 refers to containers in pod
   - look at `.spec.containers[].State` to see whats wrong
-
 - `k edit deployments first-deployment` (use with caution, edits live objects and applies edit to object immediately)
 - `k scale deployment first-deployment --replicas=3`
 - `k get <resource> --show-labels`
@@ -51,9 +48,9 @@ or...use client library
 - Provides scope for names...names need to be unique only inside a namespace
 - Don't use namespaces for versioning..use labels
 
-### Secrets
+#### Secrets
 - Create `secret` resource (from file / base64 string), mount secret as volume
-#### From base64 string
+##### From base64 string
 - See [secrets.yml](./lab/secrets/secrets.yml) & [secrets-pod.yml](./lab/secrets/secrets-pod.yml)
 ```sh
     k8s-101/k8s_on_the_cloud on  master [?] at ☸️  gke_parabolic-craft-216311_us-central1-a_my-first-clust
@@ -77,7 +74,7 @@ or...use client library
 ```
 
 
-#### From file
+##### From file
 - `kubectl create secret generic sensitive --from-file=./username.txt --from-file=./password.txt`
 - see [secrets-pod-file.yml](./lab/secrets/secrets-pod-file.yml)
 ```bash
@@ -136,6 +133,12 @@ mrk   Restart Count:  0
       SECRET_PASSWORD:  <set to the key 'password.txt' in secret 'sensitive'>  Optional: false
 ```
   </details>
+
+#### Volumes
+- see [here](../k8s_in_action/core_concepts/volumes.md)
+
+- Create hardware specific Persistent Volume (PV) [manifest](./lab/volume-sample.yml)
+- Create PV via PersistentVolumeClaim / Dynmic storage provisioning [link](../k8s_in_action/core_concepts/volumes.md#persistentvolumeclaim-with-dynamic-provisioning)
 
 #### Configmaps
 - see [configmaps](./lab/configmap) and [configmap-pod.yml](./lab/configmap/configmap-pod.yml)
