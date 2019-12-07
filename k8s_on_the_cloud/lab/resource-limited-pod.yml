@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: frontend
+spec:
+  containers:
+    - name: db
+      image: mysql
+      env: 
+        - name: MYSQL_ROOT_PASSWORD
+          value: "password"
+      resources:
+        requests:  # for the schedular to schedule on node that has minimum these resources
+          memory: "64Mi"
+          cpu: "250m"  # m - millicpus (similar to vcpu in VMs)
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
+    - name: wp
+      image: wordpress
+      resources:
+        requests:  # for the schedular to schedule on node that has minimum these resources
+          memory: "64Mi"
+          cpu: "250m"  # m - millicpus (similar to vcpu in VMs)
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
+
+# k create -f resource-limited-pod.yml
+
+
