@@ -52,6 +52,17 @@
           protocol: TCP
 ```
 
+#### Pod Lifecycle
+- Pending: Request accepted, not yet fully created (images still being downloaded, pod not scheduled yet)
+- Running: Pod bound to node, all containers started
+- Succeeded: All containers terminated successfully (will not be restarted)
+- Failed: All containers have terminated, at least 1 failed
+- Unknown: Pod status could not be queried...likely node issues
+- Restart policy for containers in a pod:
+  - Always (default)
+  - On-failure
+  - Never
+
 
 #### Labels
 - arbitray **key-value** pairs attached to a **resource**

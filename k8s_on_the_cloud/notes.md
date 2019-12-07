@@ -169,7 +169,7 @@ mrk   Restart Count:  0
   - HTTP
 - atleast-once
 <details>
-  <summary>Place inside spec.containers[]</summary>
+  <summary>Place inside spec.containers[] of Pod template</summary>
 
 ```yaml
   lifecycle: 
@@ -181,3 +181,55 @@ mrk   Restart Count:  0
         command: ["/bin/bash", "c", "prestop.sh"]
 ```
 </details>
+
+#### NodeSelectors and Affinity
+- NodeSelectors:
+  - Tag nodes with labesl, add nodeSelector to pod template
+  - Add in spec.containers[]
+- Affinity:
+  - Node Affinity: steer pod to node
+  - Pod Affinity: steer pods towards or away from pods
+```yaml
+nodeSelector:
+  <some-node-label>: <some-node-label-value> 
+```
+
+#### Taints and Tolerance
+- For anti-affinity between Pods and Nodes
+- To make sure certain nodes never host certain nodes:
+  - marks nodes with a taint
+  - only pods with a tolerance for that taint are allowed to run on that node
+- For Dedicated nodes for certain users
+- Nodes with special hardware, reserve for pods that actually make use of hardware
+- Taints
+```sh
+k taint nodes <node-name> env=dev:NoSchedule # key=value:effect, 
+                                             # here its NoSchedule (don't schedule pods on this node 
+                                             # unless pod has toleration for this key value pair)
+```
+- Tolerations
+  - add in spec.containers[] of pod template
+    ```yaml
+    tolerations:
+    - key: "dev"
+      operator: "Equal"
+      value: "env"
+      effect: "NoSchedule"    # this pod has a toleration for this taint
+    ```
+#### Init Containers
+- Run before app containers
+- Always run-to-completion
+- Run serially (each only starts after previous one finishes)
+- example [init.yml](./lab/init.yml)
+
+#### Pod Lifecycle
+- see [here](../k8s_in_action/core_concepts/pods.md#pod-lifecycle)
+
+#### Liveness & Readiness Probe
+- see [here](../k8s_in_action/core_concepts/deploying_managed_pods.md#liveness-probes)
+- Liveness
+  -`spec.containers[].livenessProbe`
+  - see [exec-liveness](./lab/exec-liveness.yml)
+- Readiness
+  - `spec.containers[].readinessProbe`
+  - probe to determing if pod IP should be added to Endpoints object to be part of service
