@@ -100,6 +100,7 @@ username.txt:  14 bytes
 ```
 <details>
 <summary>Environment variables referenced by secretKeyRef are hidden in kubectl describe</summary>
+  
 ```
 ➜ k describe pod secret-test-pod-file
 Name:               secret-test-pod-file
