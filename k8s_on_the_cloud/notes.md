@@ -11,6 +11,7 @@
 
 - `k edit deployments first-deployment` (use with caution, edits live objects and applies edit to object immediately)
 - `k scale deployment first-deployment --replicas=3`
+- `k get <resource> --show-labels`
 
 
 Types of command line tools:
@@ -54,7 +55,7 @@ or...use client library
 - Create `secret` resource (from file / base64 string), mount secret as volume
 #### From base64 string
 - See [secrets.yml](./lab/secrets/secrets.yml) & [secrets-pod.yml](./lab/secrets/secrets-pod.yml)
-- ```bash
+```sh
     k8s-101/k8s_on_the_cloud on  master [?] at ☸️  gke_parabolic-craft-216311_us-central1-a_my-first-clust
     er
     ➜ k create -f lab/secrets-pod.yml
@@ -73,7 +74,8 @@ or...use client library
     k8s-101/k8s_on_the_cloud on  master [?] at ☸️  gke_parabolic-craft-216311_us-central1-a_my-first-clust
     er took 3s
     ➜
-  ```
+```
+
 
 #### From file
 - `kubectl create secret generic sensitive --from-file=./username.txt --from-file=./password.txt`
@@ -98,10 +100,11 @@ Data
 password.txt:  14 bytes
 username.txt:  14 bytes
 ```
+
 <details>
 <summary>Environment variables referenced by secretKeyRef are hidden in kubectl describe</summary>
   
-```
+```bash
 ➜ k describe pod secret-test-pod-file
 Name:               secret-test-pod-file
 Namespace:          default
@@ -143,9 +146,9 @@ mrk   Restart Count:  0
   - eg. labels, annotations can be mounted into a container via `volumes.downwardAPI` and the usual `spec.containers[].volumeMounts`
   - see [dapi-volume.yml](./lab/dapi-volume.yml)
   <details>  
-    <summary> fieldRef gets mounted at `mountPath/path`</summary>    
+    <summary> fieldRef gets mounted at `mountPath/path`</summary>  
 
-    ```bash
+    ```sh
       ➜ k exec -it dapi-volume /bin/bash
       root@dapi-volume:/# cd /etc/podinfo
       root@dapi-volume:/etc/podinfo# ls
@@ -155,3 +158,26 @@ mrk   Restart Count:  0
       builder="john-doe"
     ```
   </details>  
+
+
+#### Container Lifecycle Events
+- Exposed as hooks
+- PostStart (called immediately after container is created, no params)
+- PreStop (immediately before container terminates)
+- Register hook handlers
+  - Exec
+  - HTTP
+- atleast-once
+<details>
+  <summary>Place inside spec.containers[]</summary>
+
+```yaml
+  lifecycle: 
+    postStart:
+      exec:
+        command: ["/bin/bash", "-c", "poststart.sh"]
+    preStop:
+      exec:
+        command: ["/bin/bash", "c", "prestop.sh"]
+```
+</details>
