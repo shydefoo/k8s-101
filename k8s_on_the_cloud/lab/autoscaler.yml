@@ -1,0 +1,11 @@
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: frontend-scalar
+spec:
+  scaleTargetRef:
+    kind: ReplicaSet # can be Deployments, ReplicationControllers. Won't worl with non-scaling objects eg DaemonSets
+    name: frontend
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 50

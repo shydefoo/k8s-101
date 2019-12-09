@@ -23,25 +23,26 @@ or...use client library
 - edit live deployments: `k edit deployment <deployment-name>`
 
 #### Object Management methods
-- Imperative commands (suitable for deletion)
+<details>
+<summary>Imperative commands (suitable for deletion)</summary>
   - No yaml or config files
   - applies to objects that are already live
   - eg `k run/expose/autoscale`
   - eg `k create first-deployment --image=nginx`
-- Imperative Object configuration
+</details>
+<detail>
+<sumamry>Imperative Object configuration</summary>
   - kubectl + yaml/config files
   - eg. `k create -f config.yml`, `k replace -f config.yml`...
-- Declarative Object config (preferred way...just use this..)
+</details>
+<details>
+<summary>Declarative Object config (preferred way...just use this..)</summary>
     - only YAML files used
     - `k apply -f config.yml`
     - Takes live obj config, current obj config, last applied obj config into consideration
+</details>
 - Don't mix and match!
 - [kubectl create vs apply](https://stackoverflow.com/questions/47369351/kubectl-apply-vs-kubectl-create)
-
-#### Objects
-- identified using:
-  - names: client-given (name field in metadata of manifest)
-  - uid: system-generated
 
 #### Namespaces
 - Virtual cluster
@@ -52,6 +53,9 @@ or...use client library
 - Create `secret` resource (from file / base64 string), mount secret as volume
 ##### From base64 string
 - See [secrets.yml](./lab/secrets/secrets.yml) & [secrets-pod.yml](./lab/secrets/secrets-pod.yml)
+<details>
+<summary> Bash output </summary>
+
 ```sh
     k8s-101/k8s_on_the_cloud on  master [?] at ☸️  gke_parabolic-craft-216311_us-central1-a_my-first-clust
     er
@@ -72,6 +76,7 @@ or...use client library
     er took 3s
     ➜
 ```
+</details>
 
 
 ##### From file
@@ -236,3 +241,25 @@ k taint nodes <node-name> env=dev:NoSchedule # key=value:effect,
 - Readiness
   - `spec.containers[].readinessProbe`
   - probe to determing if pod IP should be added to Endpoints object to be part of service
+
+#### ReplicaSets
+![Higher level K8s Objects][fig_2]
+- Manifest contains:
+  - pod template
+  - pod selector
+  - number of replicas
+  - label of replica set
+- see [frontend.yml](./lab/frontend.yml)
+- Delete just ReplicaSet but not its pods: `k delete --cascade=false`
+    - pods are now orphans
+    - can create new replicaSet and use labelSelector to include orphaned pods as part of 
+      ReplicaSet
+- Isolating pods from ReplicaSet
+- Scaling a ReplicaSet
+    - edit replicaset manifest and do `k apply -f manifest.yml`
+- Auto-scaling a ReplicaSet [HorizontalAutoScaling](./lab/autoscalar.yml)
+    - `--horizontal-pod-autoscaler-downscale-delay`
+
+
+[fig_2]: ./images/higher_level_k8s_objects.png
+
