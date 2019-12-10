@@ -1,7 +1,9 @@
 #### Commands
 
+<details>
+  <summary>command/cheat sheet</summary>
 - create deployment  
-- `k run first-deployment --image=nginx` (imperative command, creates deployment)
+- `k run first-deployment --image=nginx` (creates deployment **imperatively**)
 -`k exec -it <pod-name> /bin/bash`
 - `k get pods <pod_name>`:
   - ready 1/2 refers to containers in pod
@@ -9,6 +11,9 @@
 - `k edit deployments first-deployment` (use with caution, edits live objects and applies edit to object immediately)
 - `k scale deployment first-deployment --replicas=3`
 - `k get <resource> --show-labels`
+- `k set image deployment/<your-deployment> nginx=nginx:1.9.1`
+- `k create -f ....`
+</details>
 
 
 Types of command line tools:
@@ -21,6 +26,8 @@ or...use client library
 - clis send POST requests to kube api-server to instruct api-server what to do
 
 - edit live deployments: `k edit deployment <deployment-name>`
+
+---
 
 #### Object Management methods
 <details>
@@ -249,7 +256,7 @@ k taint nodes <node-name> env=dev:NoSchedule # key=value:effect,
   - pod selector
   - number of replicas
   - label of replica set
-- see [frontend.yml](./lab/frontend.yml)
+- see [frontend-replicaset](./lab/frontend-replicaset.yml)
 - Delete just ReplicaSet but not its pods: `k delete --cascade=false`
     - pods are now orphans
     - can create new replicaSet and use labelSelector to include orphaned pods as part of 
@@ -259,6 +266,119 @@ k taint nodes <node-name> env=dev:NoSchedule # key=value:effect,
     - edit replicaset manifest and do `k apply -f manifest.yml`
 - Auto-scaling a ReplicaSet [HorizontalAutoScaling](./lab/autoscalar.yml)
     - `--horizontal-pod-autoscaler-downscale-delay`
+
+#### Deployments
+<details>
+  <summary> Encapsulates ReplicaSet, versioning, magic</summary>
+- ReplicaSets associated with Deployment (encapsulates ReplicaSet template in Deployment)
+- Rollback / Versioning
+  - every change to deployment template is tracked (only for PodTemplate changes)
+  - creates a new revision of the deployment for each change
+  - `k rollout history deplyoment/nginx-deployment` to see reivison history
+  - `k rollout undo deployment/nginx-deployment [--to-revision=]` rollback deployment
+  - `.spec.revisionHistoryLimit` controls how many revisions (ReplicaSets) are kept
+  - `k rollout status deployment deployment-name` see status of rollout
+- Update container in pod template in deployment
+  - new ReplicaSet and new pods created (running new version of container)
+  - old ReplicaSet continues to exists but pods in old ReplicaSet gradually reduce to 0
+- Magic
+  - versioning
+  - instant rollback
+  - rolling deployments
+  - blue/green
+  - canary
+- while creating deployments, append `--record`..keeps track of commands made 
+- Fields
+  - strategy
+    - `.spec.stragety.type==Recreate`
+    - `.spec.stragety.type==RollingUpdate`
+- Pause/Resume Deployment
+  - either imperatively or declaratively
+  - `k rollout paus deployment/nginx-deployment` causes rolling update deployment to be paused
+</details>
+- see [nginx-deployment](./lab/nginx-deployment.yml)
+
+#### Stateful sets
+<details>
+  <summary>Description</summary>
+- Pods are created from the same spec, not interchangeable, each has persistent identifier that 
+  is maintained across scheduling
+- for ordered graceful deployment/scaling/deletion/termination/rolling updates
+- storage needs to be Persistent
+</details>
+- see [sts](./lab/stateful-set.yml)
+<details>
+  <summary>Output</summary>
+
+```bash
+
+k8s-101/k8s_on_the_cloud/lab on  master [»!+] at ☸️  gke_parabolic-craft-216311_us-central1-a_my-fir
+st-cluster
+➜ k apply -f stateful-set.yml
+statefulset.apps/web created
+
+k8s-101/k8s_on_the_cloud/lab on  master [»!+] at ☸️  gke_parabolic-craft-216311_us-central1-a_my-fir
+st-cluster took 2s
+➜ k get pods -l app=nginx
+NAME    READY   STATUS    RESTARTS   AGE
+web-0   1/1     Running   0          12s
+web-1   1/1     Running   0          9s
+
+k8s-101/k8s_on_the_cloud/lab on  master [»!+] at ☸️  gke_parabolic-craft-216311_us-central1-a_my-fir
+st-cluster
+➜ k scale statefulset web --replicas=4
+statefulset.apps/web scaled
+
+k8s-101/k8s_on_the_cloud/lab on  master [»!+] at ☸️  gke_parabolic-craft-216311_us-central1-a_my-fir
+st-cluster took 2s
+➜ k get pods -l app=nginx
+NAME    READY   STATUS    RESTARTS   AGE
+web-0   1/1     Running   0          73s
+web-1   1/1     Running   0          70s
+web-2   1/1     Running   0          5s
+web-3   0/1     Pending   0          3s
+
+
+k8s-101/k8s_on_the_cloud/lab on  master [»!+] at ☸️  gke_parabolic-craft-216311_us-central1-a_my-fir
+st-cluster took 2s
+➜ k describe statefulset web
+Name:               web
+Namespace:          default
+CreationTimestamp:  Tue, 10 Dec 2019 09:22:38 +0800
+Selector:           app=nginx
+Labels:             <none>
+Annotations:        kubectl.kubernetes.io/last-applied-configuration:
+                      {"apiVersion":"apps/v1","kind":"StatefulSet","metadata":{"annotations":{},"nam
+e":"web","namespace":"default"},"spec":{"replicas":2,"select...
+Replicas:           4 desired | 4 total
+Update Strategy:    RollingUpdate
+  Partition:        824639281820
+Pods Status:        3 Running / 1 Waiting / 0 Succeeded / 0 Failed
+Pod Template:
+  Labels:  app=nginx
+  Containers:
+   nginx:
+    Image:        nginx
+    Port:         <none>
+    Host Port:    <none>
+    Environment:  <none>
+    Mounts:       <none>
+  Volumes:        <none>
+Volume Claims:    <none>
+Events:
+  Type    Reason            Age   From                    Message
+  ----    ------            ----  ----                    -------
+  Normal  SuccessfulCreate  95s   statefulset-controller  create Pod web-0 in StatefulSet web succes
+sful
+  Normal  SuccessfulCreate  92s   statefulset-controller  create Pod web-1 in StatefulSet web succes
+sful
+  Normal  SuccessfulCreate  27s   statefulset-controller  create Pod web-2 in StatefulSet web succes
+sful
+  Normal  SuccessfulCreate  25s   statefulset-controller  create Pod web-3 in StatefulSet web succes
+sful
+```
+</details>
+
 
 
 [fig_2]: ./images/higher_level_k8s_objects.png
