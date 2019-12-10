@@ -309,8 +309,8 @@ k taint nodes <node-name> env=dev:NoSchedule # key=value:effect,
 - see [sts](./lab/stateful-set.yml)
 <details>
   <summary>Output</summary>
-
 ```bash
+</details>
 
 k8s-101/k8s_on_the_cloud/lab on  master [»!+] at ☸️  gke_parabolic-craft-216311_us-central1-a_my-fir
 st-cluster
@@ -379,7 +379,14 @@ sful
 ```
 </details>
 
+#### Jobs
+- refer to [Job Resources](../k8s_in_action/core_concepts/deploying_managed_pods.md#job-resource)
+- see [jobs](./lab/job.yml)
 
+#### Services
+- refer to [services](../k8s_in_action/core_concepts/services.md)
+
+#### Role, ClusterRole, RoleBinding, ClusterRoleBinding, ServiceAccounts
 
 [fig_2]: ./images/higher_level_k8s_objects.png
 

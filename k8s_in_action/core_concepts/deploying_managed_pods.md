@@ -27,7 +27,7 @@
 - Always remember to set an inital delay to account for app's startup time via *initialDelaySeconds*
 - Liveness probes should be lightweight and snould not take too long to complete (as they are executed very frequently)
 ####  HTTP-based liveness probe
-- ```yaml
+  ```yaml
         apiVersion: v1
         kind: pod
         metadata:
@@ -41,11 +41,11 @@
                 path: /                        # path to request in HTTP request
                 port: 8080                     # network port the probe should connect to
               initialDelaySeconds: 15          # Kublet will wait 15s before executing first probe
-    ``` 
+  ``` 
 - pod descriptor tells K8s to periodically perform HTTP GET requests on path / on port 8080 to determine if container is healthy
 - When liveness probe fails, Kublet will restart container
 - `kubectl describe pod <podname>` provides information of pod:
-    - ```yaml
+    ```yaml
         ...
         Containers:
           kubia:
@@ -74,13 +74,16 @@
     - `timeout=1s`, container must return a response in 1s or probe is counted as failure
     - `period=10s`, container probed every 10s
     - `failure=3`, container is restarted after probe fails 3 **consecutive** times
-***
+---
 
 - Kubelet of the node hosting the pod ensures that containers are kept running. But if the node itself crashes, its the Control Plane that must create replacements for all the pods that went down with the node
     - Kubelet can't do anything if the node fails
 - To ensure that the app is restarted on another node, the pod needs to be managed by another resource..eg. **Replication Resource**
 
+
 #### Replication Controllers
+
+
 - Resource that constantly monitors the list of running pods and makes sure the actual number of pods that match a certain label selector always matches the desired number
 - Components:
     - label selector: determines what pods are in the ReplicationController's scope
@@ -92,7 +95,7 @@
 - Since RCs manage pods that match its label selector, a pod can be removed from or added to the scope of a RC by changing it's labels
     - useful when performing actions on a specific pod
 #### Definition
-- ```yaml
+  ```yaml
     apiVersion: v1
     kind: ReplicationController
     metadata:
@@ -113,26 +116,26 @@
             - containerPort: 8080
   ```
 - Example description of RC
-    - ```yaml
-        Name:           kubia
-        Namespace:      default
-        Selector:       app=kubia
-        Labels:         app=kubia
-        Annotations:    <none>
-        Replicas:       3 current / 3 desired                                    1
-        Pods Status:    4 Running / 0 Waiting / 0 Succeeded / 0 Failed           2
-        Pod Template:
-          Labels:       app=kubia
-          Containers:   ...
-          Volumes:      <none>
-        Events:                                                                  3
-        From                    Type      Reason           Message
-        ----                    -------  ------            -------
-        replication-controller  Normal   SuccessfulCreate  Created pod: kubia-53thy
-        replication-controller  Normal   SuccessfulCreate  Created pod: kubia-k0xz6
-        replication-controller  Normal   SuccessfulCreate  Created pod: kubia-q3vkg
-        replication-controller  Normal   SuccessfulCreate  Created pod: kubia-oini2
-      ```
+    ```yaml
+      Name:           kubia
+      Namespace:      default
+      Selector:       app=kubia
+      Labels:         app=kubia
+      Annotations:    <none>
+      Replicas:       3 current / 3 desired                                    1
+      Pods Status:    4 Running / 0 Waiting / 0 Succeeded / 0 Failed           2
+      Pod Template:
+        Labels:       app=kubia
+        Containers:   ...
+        Volumes:      <none>
+      Events:                                                                  3
+      From                    Type      Reason           Message
+      ----                    -------  ------            -------
+      replication-controller  Normal   SuccessfulCreate  Created pod: kubia-53thy
+      replication-controller  Normal   SuccessfulCreate  Created pod: kubia-k0xz6
+      replication-controller  Normal   SuccessfulCreate  Created pod: kubia-q3vkg
+      replication-controller  Normal   SuccessfulCreate  Created pod: kubia-oini2
+    ```
     - `Pod Status: 4 Running` even though `Replicas: 3 current / 3 desires` because a pod that's terminating is still considered running, but not counted in the replica count
 
 
@@ -149,25 +152,25 @@
 - Usually used to run infra-related pods that perform system-level operations (eg. log collector, resource monitor)
   - K8s own kube-proxy process is needed to run on all nodes to make services work
 - Example DaemonSet manifeest:
-- ```yaml
-  apiVersion: apps/v1beta2           # DaemonSets are inthe apps API group, version v1beta2
-  kind: DaemonSet                    
-  metadata:
-    name: ssd-monitor
-  spec:
-    selector:
-      matchLabels:
-        app: ssd-monitor
-    template:
-      metadata:
-        labels:
+  ```yaml
+    apiVersion: apps/v1beta2           # DaemonSets are inthe apps API group, version v1beta2
+    kind: DaemonSet                    
+    metadata:
+      name: ssd-monitor
+    spec:
+      selector:
+        matchLabels:
           app: ssd-monitor
-      spec:
-        nodeSelector:                # pod template includes a node selector, which 
-          disk: ssd                  # selects nodes with the disk=ssd label
-        containers:
-        - name: main
-          image: luksa/ssd-monitor
+      template:
+        metadata:
+          labels:
+            app: ssd-monitor
+        spec:
+          nodeSelector:                # pod template includes a node selector, which 
+            disk: ssd                  # selects nodes with the disk=ssd label
+          containers:
+          - name: main
+            image: luksa/ssd-monitor
   ```
 - ![DaemonSets run only a single pod replica on each node, ReplicaSets scatter tham around the whole cluster randomly][fig_4_8]
 
