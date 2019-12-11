@@ -13,6 +13,7 @@
 - `k get <resource> --show-labels`
 - `k set image deployment/<your-deployment> nginx=nginx:1.9.1`
 - `k create -f ....`
+- `k expose deployment my-deployment --type="LoadBalancer" --name"example-service"`
 </details>
 
 
@@ -306,11 +307,11 @@ k taint nodes <node-name> env=dev:NoSchedule # key=value:effect,
 - for ordered graceful deployment/scaling/deletion/termination/rolling updates
 - storage needs to be Persistent
 </details>
-- see [sts](./lab/stateful-set.yml)
+  <summary>
+- Output of [sts](./lab/stateful-set.yml)
+  </summary>
 <details>
-  <summary>Output</summary>
 ```bash
-</details>
 
 k8s-101/k8s_on_the_cloud/lab on  master [»!+] at ☸️  gke_parabolic-craft-216311_us-central1-a_my-fir
 st-cluster
@@ -385,6 +386,47 @@ sful
 
 #### Services
 - refer to [services](../k8s_in_action/core_concepts/services.md)
+- VirtualIp access to service
+  - can be used by clients from outside cluster to access service object
+  - implemented by kube-proxy (which runs on each node)
+  - Each kube-proxy will relay external traffic to correct VIPs (proxies incoming request on NodePort services)
+- ClusterIp, NodePortIp, LoadBalancer, ExternalName
+- Internal DNS provides domain name resolution..
+    - eg: http://service_name:port/...
+    - eg: http://service_name.namespace:port/... if calling from another namespace
+    - DNS SRV records for named ports: port-name.port-protocol.svc.namespace.svc.cluster.local
+        - returns port number
+- Securing services
+  - use HTTPS to secure channel
+    - need cert + configure server to use certs + secret to make services accessible to pods
+```bash
+k8s-101/k8s_on_the_cloud/lab on  master [!] at ☸️  gke_parabolic-craft-216311_us-central1-a_my-first
+-cluster took 5s
+➜ k run nginx --image=nginx
+kubectl run --generator=deployment/apps.v1 is DEPRECATED and will be removed in a future version. Us
+e kubectl run --generator=run-pod/v1 or kubectl create instead.
+deployment.apps/nginx created
+
+k8s-101/k8s_on_the_cloud/lab on  master [!] at ☸️  gke_parabolic-craft-216311_us-central1-a_my-first
+-cluster took 2s
+➜ k expose deployment nginx --type=LoadBalancer --name=nginx-service --port=8080
+service/nginx-service exposed
+
+k8s-101/k8s_on_the_cloud/lab on  master [!] at ☸️  gke_parabolic-craft-216311_us-central1-a_my-first
+-cluster
+➜ k get services
+NAME            TYPE           CLUSTER-IP    EXTERNAL-IP   PORT(S)          AGE
+kubernetes      ClusterIP      10.43.240.1   <none>        443/TCP          4d7h
+nginx-service   LoadBalancer   10.43.242.0   <pending>     8080:31060/TCP   39s
+
+k8s-101/k8s_on_the_cloud/lab on  master [!] at ☸️  gke_parabolic-craft-216311_us-central1-a_my-first
+-cluster
+➜ k get services
+NAME            TYPE           CLUSTER-IP    EXTERNAL-IP    PORT(S)          AGE
+kubernetes      ClusterIP      10.43.240.1   <none>         443/TCP          4d7h
+nginx-service   LoadBalancer   10.43.242.0   35.226.53.23   8080:31060/TCP   109s
+
+```
 
 #### Role, ClusterRole, RoleBinding, ClusterRoleBinding, ServiceAccounts
 
