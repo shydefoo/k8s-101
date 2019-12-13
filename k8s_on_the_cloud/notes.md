@@ -298,6 +298,7 @@ k taint nodes <node-name> env=dev:NoSchedule # key=value:effect,
   - either imperatively or declaratively
   - `k rollout paus deployment/nginx-deployment` causes rolling update deployment to be paused
 </details>
+
 - see [nginx deployment](./lab/nginx-deployment.yml)
 
 #### Stateful sets
@@ -310,8 +311,9 @@ k taint nodes <node-name> env=dev:NoSchedule # key=value:effect,
 - storage needs to be Persistent
 </details>
 <details>
-  <summary>Output of [stateful set](./lab/stateful-set.yml)</summary>
+  <summary>Output of stateful set</summary>
 
+- see [stateful-set](./lab/stateful-set.yml)
 ```bash
 
 k8s-101/k8s_on_the_cloud/lab on  master [»!+] at ☸️  gke_parabolic-craft-216311_us-central1-a_my-fir
