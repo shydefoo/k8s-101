@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: overfishing-redis
+  labels:
+    app: overfishing
+spec:
+  selector:
+    matchLabels:
+      app: overfishing
+      type: redis
+  template:
+    metadata:
+      name: redis
+      labels:
+        app: overfishing
+        type: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis
+          ports:
+            - name: redis-port
+              containerPort: 6379

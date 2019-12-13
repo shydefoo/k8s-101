@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: overfishing-frontend
+  labels:
+    app: overfishing
+spec:
+  selector:
+    matchLabels:
+      app: overfishing
+      type: frontend
+  template:
+    metadata:
+      name: overfishing-fe
+      labels:
+        app: overfishing
+        type: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: overfishing-fe
+          ports:
+            - name: http
+              containerPort: 3000
+

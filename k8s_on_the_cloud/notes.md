@@ -429,6 +429,20 @@ nginx-service   LoadBalancer   10.43.242.0   35.226.53.23   8080:31060/TCP   109
 ```
 
 #### Role, ClusterRole, RoleBinding, ClusterRoleBinding, ServiceAccounts
+- see [RBAC](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)
+- for Identity and Access management
+- Identities:
+  - Indivi Users, Groups, Service Accounts
+- Access:
+  - RBAC
+  - Roles - apply to namespace
+  - ClusterRole - apply to entire cluster
+- Achieve identity-access association with **Binding**
+- ClusterRoleBinding, RoleBindings
+    - ClusterRB has no namespace in metadata
 
 [fig_2]: ./images/higher_level_k8s_objects.png
 
+
+#### Example App
+- see [overfishing](./lab/example-app)
