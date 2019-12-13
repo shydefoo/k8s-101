@@ -271,6 +271,7 @@ k taint nodes <node-name> env=dev:NoSchedule # key=value:effect,
 #### Deployments
 <details>
   <summary> Encapsulates ReplicaSet, versioning, magic</summary>
+  
 - ReplicaSets associated with Deployment (encapsulates ReplicaSet template in Deployment)
 - Rollback / Versioning
   - every change to deployment template is tracked (only for PodTemplate changes)
@@ -302,15 +303,15 @@ k taint nodes <node-name> env=dev:NoSchedule # key=value:effect,
 #### Stateful sets
 <details>
   <summary>Description</summary>
+  
 - Pods are created from the same spec, not interchangeable, each has persistent identifier that 
   is maintained across scheduling
 - for ordered graceful deployment/scaling/deletion/termination/rolling updates
 - storage needs to be Persistent
 </details>
-  <summary>
-- Output of [sts](./lab/stateful-set.yml)
-  </summary>
 <details>
+  <summary>Output of [sts](./lab/stateful-set.yml)</summary>
+
 ```bash
 
 k8s-101/k8s_on_the_cloud/lab on  master [»!+] at ☸️  gke_parabolic-craft-216311_us-central1-a_my-fir
@@ -385,7 +386,6 @@ sful
 - see [jobs](./lab/job.yml)
 
 #### Services
-- refer to [services](../k8s_in_action/core_concepts/services.md)
 - VirtualIp access to service
   - can be used by clients from outside cluster to access service object
   - implemented by kube-proxy (which runs on each node)
