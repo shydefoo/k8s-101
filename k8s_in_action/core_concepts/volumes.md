@@ -39,6 +39,7 @@
 * Pods being aware of their underlying infrastructure is an antipattern
 
 #### PersistentVolumes and PersistentVolumeClaims
+![Pv & PVCs][fig_6_6]
 
 
 #### PersistentVolumeClaim with dynamic provisioning
@@ -87,3 +88,4 @@
 
 
 [fig_6_10]: ./images/06fig10_alt.jpg "Figure 6.10 The complete picture of dynamic provisioning of PersistantVolumes"
+[fig_6_6]: ./images/06fig06_alt.jpg "Figure 6.6 Persistent Volumes are provisioned by cluster admins and consumed by pods through PersistentVolumeClaims"
