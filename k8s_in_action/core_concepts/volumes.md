@@ -40,7 +40,49 @@
 
 #### PersistentVolumes and PersistentVolumeClaims
 ![Pv & PVCs][fig_6_6]
+* cluster admin sets up underlying storage (eg NFS) 
+* registers underlying storage with k8s by creating a PersistentVolume resource (through K8s API)
+  * specify size & access mode supported
+* User creates PersistentVolumeClaim when pod requires persistent storage
+  * specify minimum size & access mode
+* K8s finds appropriate PersistentVolume and **binds volume to claim**
+* PersistentVolumeClaim is used as a volume inside pod
 
+* Create PersistentVolume (usually done by administrator)
+```yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mongodb-pv
+spec:
+  capacity:                                 1
+    storage: 1Gi                            1
+  accessModes:                              2  
+  - ReadWriteOnce                           2  can EITHER be mounted by single client for reading and writing
+  - ReadOnlyMany                            2  OR mounted by multiple clients for reading only 
+  persistentVolumeReclaimPolicy: Retain     3  after claim is released, PersistentVolume should not be erased/deleted
+  gcePersistentDisk:                        4  backed by GCE Persistent Disk
+    pdName: mongodb                         4
+    fsType: ext4                            4
+```
+
+* Create PersistentVolumeClaim (k8s user)
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongodb-pvc              1
+spec:
+  resources:
+    requests:                    2
+      storage: 1Gi               2
+  accessModes:                   3
+  - ReadWriteOnce                3 support single client (performing both read and writes)
+  storageClassName: ""           4
+```
+
+* RWO, ROX, RWX - ReadWriteOnce, ReadOnlyMany, ReadWriteMany (pertain to number of **worker nodes** that can use the volume 
+at the same time, NOT number of pods)
 
 #### PersistentVolumeClaim with dynamic provisioning
 - Best way to attach persistant storage to a pod is to only create the `PersistentVolumeClaim` as a `spec.volumes` and **mount** volume in `spec.containers[].volumeMounts`
