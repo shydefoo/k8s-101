@@ -30,6 +30,17 @@
       <type_of_vol>: ...
 ```
 
+#### Using Persistent Storage
+* For apps that run inside a pod and need to persist data to disk, but have that same data avaialable when pod is scheduled 
+  to another node, **Network Access Storage** (NAS) required (mount external storage inside volume)
+* Eg. GCE Persistent Disk as a pod volume, pods will see same data no matter which node it is scheduled on
+* Persistent volume used depends on underlying infra & possible cluster provider
+* For self hosted cluster, **NFS** share would work
+* Pods being aware of their underlying infrastructure is an antipattern
+
+#### PersistentVolumes and PersistentVolumeClaims
+
+
 #### PersistentVolumeClaim with dynamic provisioning
 - Best way to attach persistant storage to a pod is to only create the `PersistentVolumeClaim` as a `spec.volumes` and **mount** volume in `spec.containers[].volumeMounts`
 - PersistentVolumeClaim
