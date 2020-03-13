@@ -81,45 +81,56 @@ spec:
   storageClassName: ""           4
 ```
 
+* <details><summary>Using PersistantVolumeClaim inside pod</summary>
+  
+  - Best way to attach persistant storage to a pod is to only create the `PersistentVolumeClaim` as a `spec.volumes` and **mount** volume in `spec.containers[].volumeMounts`
+  - PersistentVolumeClaim
+    ```yaml
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: my-persistent-vol-claim
+    spec:
+      resources:
+        requests:
+          storage: 1Gi
+      accessModes:
+        - ReadWriteOnce
+    ```
+  - Use PersistentVolumeClaim in Pod (cluster will dynamically provision PersistentVolume and underlying storage)
+      ```yaml
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: mongodb
+      spec:
+        containers:
+          - name: mongo
+            image: mongodb
+            volumeMounts:
+              - name: mongodb-vol
+                mountPath: /data/db
+        volumes:
+          - name: mongodb-vol
+            persistentVolumeClaim:
+              claimName: my-persistent-vol-claim
+
+      ```
+    </details>
+
 * RWO, ROX, RWX - ReadWriteOnce, ReadOnlyMany, ReadWriteMany (pertain to number of **worker nodes** that can use the volume 
 at the same time, NOT number of pods)
 
 #### PersistentVolumeClaim with dynamic provisioning
-- Best way to attach persistant storage to a pod is to only create the `PersistentVolumeClaim` as a `spec.volumes` and **mount** volume in `spec.containers[].volumeMounts`
-- PersistentVolumeClaim
-  ```yaml
-  apiVersion: v1
-  kind: PersistentVolumeClaim
-  metadata:
-    name: my-persistent-vol-claim
-  spec:
-    resources:
-      requests:
-        storage: 1Gi
-    accessModes:
-      - ReadWriteOnce
-  ```
-- Use PersistentVolumeClaim in Pod (cluster will dynamically provision PersistentVolume and underlying storage)
-    ```yaml
-    apiVersion: v1
-    kind: Pod
-    metadata:
-      name: mongodb
-    spec:
-      containers:
-        - name: mongo
-          image: mongodb
-          volumeMounts:
-            - name: mongodb-vol
-              mountPath: /data/db
-      volumes:
-        - name: mongodb-vol
-          persistentVolumeClaim:
-            claimName: my-persistent-vol-claim
-    
-    ```
+* Create a **PersistentVolume provisioner** and define 1 or more **StorageClass** objects to let users choose what type of PersistentVolumes they want
+* let system create new PersistentVolume each time a PV is requested through a PVC
+
 - EVERYTHING else is taken care of by the *dynamic PersistantVolume provisioner  
+
 ![Complete picture of dynamic provisioning][fig_6_10]
+
+* specifiying empty string as storage class name ensures the PVC binds to a pre-provisioned PV instead of dynamically
+provisioning a new one
 
 
 
