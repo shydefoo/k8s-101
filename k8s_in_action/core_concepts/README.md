@@ -3,4 +3,5 @@
 - [Replication and other controllers: deploying managed pods](./deploying_managed_pods.md)
 - [Services](./services.md)
 - [Volumes](./volumes.md)
+- [ConfigMaps & Secrets](./secrets_configmaps.md)
 
