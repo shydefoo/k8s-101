@@ -187,8 +187,9 @@
   - retry x times before it is marked as failed by specifying `spec.backoffLimit` (default 6)
 - ![Pods managed by Jobs are rescheduled until they finish successfully][fig_4_10]
 
+
 #### Job resource definition
-- ```yaml
+```yaml
   apiVersion: batch/v1            # Jobs are in the batch API group, version v1
   kind: Job
   metadata:
@@ -207,7 +208,7 @@
         - name: main
           image: registry/image
 
-  ```
+```
 
 ### CronJob Resource
 - like a cron job in unix, create a **Job** resource according to the Job template which creates and starts pod replicas according to the Job's pod template
@@ -220,7 +221,7 @@
     - Ensure next job run performs any work that should have been done by previous (missed) run
 
 #### CronJob definition
-- ```yaml
+```yaml
   apiVersion: batch/v1beta1
   Kind: CronJob
   metadata:
